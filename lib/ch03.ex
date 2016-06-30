@@ -46,6 +46,27 @@ defmodule Funpurr.Ch03 do
       end
     end
 
+    # exercise 3.3
+    def from_list([]), do: empty()
+    def from_list([h]), do: make_leaf(h)
+    def from_list(l) do
+      __MODULE__.merge_list Enum.map(l, &(make_leaf/1))
+    end
+
+    def merge_list(l) do
+      merged = [h | t] =
+        Enum.chunk(l, 2, 2, [empty()])
+        |> Enum.map(fn pair -> apply __MODULE__, :merge, pair end)
+      case t do
+        [] ->
+          h
+        [%Empty{}] ->
+          h
+        _ ->
+          __MODULE__.merge_list merged
+      end
+    end
+
     defp make_tree(elem, left, right) do
       if rank(left) >= rank(right) do
         %Tree{rank: rank(right) + 1, elem: elem, left: left, right: right}

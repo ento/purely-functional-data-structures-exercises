@@ -1,5 +1,7 @@
 defmodule Ch03Test do
   use ExUnit.Case
+  import Mock
+  import MockHistory
   doctest Funpurr.Ch03
   alias Funpurr.Ch03.LeftistHeap, as: Heap
 
@@ -81,6 +83,35 @@ defmodule Ch03Test do
       }
       assert Heap.insert_through_merge('h1', target) == expected
       assert Heap.insert('h1', target) == expected
+    end
+  end
+
+  describe "Funpurr.Ch03.LeftistHeap.from_list/1" do
+    test_with_mock "empty list", Heap, [:passthrough], [] do
+      assert Heap.from_list([]) == Heap.empty()
+      assert num_calls(Heap.merge_list(:_)) == 0
+    end
+
+    test_with_mock "single element", Heap, [:passthrough], [] do
+      assert Heap.from_list([1]) == leaf(1)
+      assert num_calls(Heap.merge_list(:_)) == 0
+    end
+
+    test_with_mock "four elements", Funpurr.Ch03.LeftistHeap, [:passthrough], [] do
+      expected = %Heap.Tree{
+        rank: 2,
+        elem: 1,
+        left: leaf(2),
+        right: %Heap.Tree{
+          rank: 1,
+          elem: 3,
+          left: leaf(4),
+          right: Heap.empty(),
+        },
+      }
+      assert Heap.from_list([1, 2, 3, 4]) == expected
+      assert num_calls(Heap.from_list(:_)) == 1
+      assert num_calls(Heap.merge_list(:_)) == 2
     end
   end
 
