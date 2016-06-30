@@ -37,7 +37,7 @@ defmodule Funpurr.Ch03 do
     end
 
     # exercise 3.2
-    def insert(x, %Empty{}), do: make_leaf(1, x)
+    def insert(x, %Empty{}), do: make_leaf(x)
     def insert(x, h = %Tree{elem: elem, left: left, right: right}) do
       if x <= elem do
         %Tree{rank: 1, elem: x, left: h, right: empty()}
@@ -54,8 +54,8 @@ defmodule Funpurr.Ch03 do
       end
     end
 
-    defp make_leaf(rank, elem) do
-      %Tree{rank: rank, elem: elem, left: empty(), right: empty()}
+    defp make_leaf(elem) do
+      %Tree{rank: 1, elem: elem, left: empty(), right: empty()}
     end
   end
 end
