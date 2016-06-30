@@ -53,6 +53,8 @@ defmodule Funpurr.Ch03 do
       __MODULE__.merge_list Enum.map(l, &(make_leaf/1))
     end
 
+    # needs to be public to be able to call this through __MODULE__,
+    # which in turn is needed to count calls through meck/mock.
     def merge_list(l) do
       merged = [h | t] =
         Enum.chunk(l, 2, 2, [empty()])
