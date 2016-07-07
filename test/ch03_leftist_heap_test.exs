@@ -1,8 +1,8 @@
-defmodule Ch03Test do
+defmodule Ch03LeftistHeapTest do
   use ExUnit.Case
   import Mock
   import MockHistory
-  doctest Funpurr.Ch03
+  doctest Funpurr.Ch03.LeftistHeap
   alias Funpurr.Ch03.LeftistHeap, as: Heap
 
   describe "Funpurr.Ch03.LeftistHeap.rank/1" do
