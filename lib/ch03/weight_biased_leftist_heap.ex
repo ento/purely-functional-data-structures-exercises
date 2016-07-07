@@ -24,9 +24,9 @@ defmodule Funpurr.Ch03.WeightBiasedLeftistHeap do
     h1 = %Tree{elem: elem1, left: left1, right: right1},
     h2 = %Tree{elem: elem2, left: left2, right: right2}) do
     if elem1 <= elem2 do
-      make_tree(elem1, left1, merge(right1, h2))
+      make_weighted_tree(elem1, left1, right1, h2)
     else
-      make_tree(elem2, left2, merge(h1, right2))
+      make_weighted_tree(elem2, left2, h1, right2)
     end
   end
 
@@ -64,6 +64,17 @@ defmodule Funpurr.Ch03.WeightBiasedLeftistHeap do
         h
       _ ->
         __MODULE__.merge_list merged
+    end
+  end
+
+  # exercise 3.4 (c)
+  defp make_weighted_tree(elem, left, right1, right2) do
+    right_weight = weight(right1) + weight(right2)
+    left_weight = weight(left)
+    if left_weight >= right_weight do
+      %Tree{weight: right_weight + left_weight + 1, elem: elem, left: left, right: merge(right1, right2)}
+    else
+      %Tree{weight: right_weight + left_weight + 1, elem: elem, left: merge(right1, right2), right: left}
     end
   end
 
