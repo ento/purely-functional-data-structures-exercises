@@ -1,36 +1,36 @@
 defmodule Funpurr.Ch03.BinomialHeap do
   # datatype Heap = Tree list
-  @type heap(a) :: list(Node.t(a))
+  @type heap(a) :: list({non_neg_integer, Node.t(a)})
 
   # datatype Tree = Node of int x Elem.T x Tree list
   defmodule Node do
-    @type t(a) :: %Node{rank: non_neg_integer, elem: a, children: list(Node.t(a))}
-    defstruct [:rank, :elem, :children]
+    @type t(a) :: %Node{elem: a, children: list(Node.t(a))}
+    defstruct [:elem, :children]
   end
 
   @spec empty() :: heap(any)
   def empty(), do: []
 
-  @spec rank(Node.t) :: non_neg_integer
-  def rank(%Node{rank: rank}), do: rank
+  @spec rank({non_neg_integer, Node.t}) :: non_neg_integer
+  def rank({rank, _}), do: rank
 
-  @spec root(Node.t(a)) :: a when a: any
-  def root(%Node{elem: elem}), do: elem
+  @spec root({non_neg_integer, Node.t(a)}) :: a when a: any
+  def root({_, %Node{elem: elem}}), do: elem
 
-  @spec link(Node.t, Node.t) :: Node.t
+  @spec link({non_neg_integer, Node.t}, {non_neg_integer, Node.t}) :: {non_neg_integer, Node.t}
   def link(
-    t1 = %Node{rank: rank1, elem: elem1, children: children1},
-    t2 = %Node{elem: elem2, children: children2}) do
+    {rank1, %Node{elem: elem1, children: children1}} = t1,
+    {_, %Node{elem: elem2, children: children2}} = t2) do
     if elem1 <= elem2 do
-      %Node{rank: rank1 + 1, elem: elem1, children: [t2 | children1]}
+      {rank1 + 1, %Node{elem: elem1, children: [t2 | children1]}}
     else
-      %Node{rank: rank1 + 1, elem: elem2, children: [t1 | children2]}
+      {rank1 + 1, %Node{elem: elem2, children: [t1 | children2]}}
     end
   end
 
   @spec insert(a, heap(a)) :: heap(a) when a: any
   def insert(elem, heap) do
-    ins_tree(%Node{rank: 0, elem: elem, children: []}, heap)
+    ins_tree({0, %Node{elem: elem, children: []}}, heap)
   end
 
   defp ins_tree(t, []), do: [t]
@@ -87,7 +87,7 @@ defmodule Funpurr.Ch03.BinomialHeap do
 
   @spec delete_min(heap(a)) :: heap(a) when a: any
   def delete_min(heap) do
-    {%Node{children: min_children}, rest} = remove_min_tree(heap)
+    {{_, %Node{children: min_children}}, rest} = remove_min_tree(heap)
     merge(Enum.reverse(min_children), rest)
   end
 end

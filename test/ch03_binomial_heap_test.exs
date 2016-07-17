@@ -9,27 +9,26 @@ defmodule Ch03BinomialHeapTest do
     end
 
     test "rank of a non-empty tree" do
-      assert Heap.rank(%Heap.Node{rank: 1, elem: 'x', children: []}) == 1
+      assert Heap.rank({1, %Heap.Node{elem: 'x', children: []}}) == 1
     end
   end
 
   describe "Funpurr.Cha3.BinomialHeap.link/2" do
     test "link a and b" do
-      expected = %Heap.Node{rank: 1, elem: 'a', children: [leaf('b')]}
+      expected = {1, %Heap.Node{elem: 'a', children: [leaf('b')]}}
       assert Heap.link(leaf('a'), leaf('b')) == expected
       assert Heap.link(leaf('b'), leaf('a')) == expected
     end
 
     test "link a-b and c-d" do
-      heap_a_b = %Heap.Node{rank: 1, elem: 'a', children: [leaf('b')]}
-      heap_c_d = %Heap.Node{rank: 1, elem: 'c', children: [leaf('d')]}
-      expected = %Heap.Node{
-        rank: 2,
+      heap_a_b = {1, %Heap.Node{elem: 'a', children: [leaf('b')]}}
+      heap_c_d = {1, %Heap.Node{elem: 'c', children: [leaf('d')]}}
+      expected = {2, %Heap.Node{
         elem: 'a',
         children: [
           heap_c_d,
           leaf('b'),
-        ]}
+        ]}}
       assert Heap.link(heap_a_b, heap_c_d) == expected
       assert Heap.link(heap_c_d, heap_a_b) == expected
     end
@@ -49,22 +48,20 @@ defmodule Ch03BinomialHeapTest do
     test "merging h1 with h2" do
       h1 = [leaf('h1')]
       h2 = [leaf('h2')]
-      expected = %Heap.Node{
-        rank: 1,
+      expected = {1, %Heap.Node{
         elem: 'h1',
         children: h2,
-      }
+      }}
       assert Heap.merge(h1, h2) == [expected]
     end
 
     test "merging h2 with h1" do
       h1 = [leaf('h1')]
       h2 = [leaf('h2')]
-      expected = %Heap.Node{
-        rank: 1,
+      expected = {1, %Heap.Node{
         elem: 'h1',
         children: h2,
-      }
+      }}
       assert Heap.merge(h2, h1) == [expected]
     end
   end
@@ -75,20 +72,18 @@ defmodule Ch03BinomialHeapTest do
     end
 
     test "insert a to b" do
-      a_b = %Heap.Node{
-        rank: 1,
+      a_b = {1, %Heap.Node{
         elem: 'a',
         children: [leaf('b')],
-      }
+      }}
       assert Heap.insert('a', [leaf('b')]) == [a_b]
     end
 
     test "insert a to b_c" do
-      b_c = %Heap.Node{
-        rank: 1,
+      b_c = {1, %Heap.Node{
         elem: 'b',
         children: [leaf('c')],
-      }
+      }}
       assert Heap.insert('a', [b_c]) == [leaf('a'), b_c]
     end
   end
@@ -106,11 +101,10 @@ defmodule Ch03BinomialHeapTest do
     end
 
     test "min of [c, a_b]" do
-      a_b = %Heap.Node{
-        rank: 1,
+      a_b = {1, %Heap.Node{
         elem: 'a',
         children: [leaf('b')],
-      }
+      }}
       c_a_b = Heap.insert('c', [a_b])
       assert Heap.find_min_via_remove_min_tree(c_a_b) == 'a'
       assert Heap.find_min(c_a_b) == 'a'
@@ -137,10 +131,9 @@ defmodule Ch03BinomialHeapTest do
   end
 
   defp leaf(elem \\ 'hello') do
-    %Heap.Node{
-      rank: 0,
+    {0, %Heap.Node{
       elem: elem,
-      children: []}
+      children: []}}
   end
 
   defp from_list(list) do
