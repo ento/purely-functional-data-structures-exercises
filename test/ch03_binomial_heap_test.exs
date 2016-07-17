@@ -101,6 +101,7 @@ defmodule Ch03BinomialHeapTest do
     end
 
     test "min of leaf a" do
+      assert Heap.find_min_via_remove_min_tree([leaf('a')]) == 'a'
       assert Heap.find_min([leaf('a')]) == 'a'
     end
 
@@ -111,6 +112,7 @@ defmodule Ch03BinomialHeapTest do
         children: [leaf('b')],
       }
       c_a_b = Heap.insert('c', [a_b])
+      assert Heap.find_min_via_remove_min_tree(c_a_b) == 'a'
       assert Heap.find_min(c_a_b) == 'a'
     end
   end

@@ -57,8 +57,20 @@ defmodule Funpurr.Ch03.BinomialHeap do
     end
   end
 
+  # exercise 3.5
   @spec find_min(heap(a)) :: a when a: any
-  def find_min(ts) do
+  def find_min([h]), do: root(h)
+  def find_min([h | t]) do
+    [t_head | t_tail] = t
+    if root(h) < root(t_head) do
+      find_min([h | t_tail])
+    else
+      find_min(t)
+    end
+  end
+
+  @spec find_min_via_remove_min_tree(heap(a)) :: a when a: any
+  def find_min_via_remove_min_tree(ts) do
     {t, _} = remove_min_tree(ts)
     root(t)
   end
