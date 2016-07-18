@@ -3,49 +3,49 @@ defmodule Ch03LeftistHeapTest do
   import Mock
   import MockHistory
   doctest Funpurr.Ch03.LeftistHeap
-  alias Funpurr.Ch03.LeftistHeap, as: Heap
+  alias Funpurr.Ch03.LeftistHeap, as: LHeap
 
   describe "Funpurr.Ch03.LeftistHeap.rank/1" do
     test "rank of an empty tree" do
-      assert Heap.rank(Heap.empty()) == 0
+      assert LHeap.rank(LHeap.empty()) == 0
     end
 
     test "rank of a non-empty tree" do
-      assert Heap.rank(leaf()) == 1
+      assert LHeap.rank(LHeap.make_leaf('a')) == 1
     end
   end
 
   describe "Funpurr.Ch03.LeftistHeap.merge/2" do
     test "merging a tree with an empty tree" do
-      tree = leaf()
-      assert Heap.merge(tree, Heap.empty()) == tree
+      tree = LHeap.make_leaf('a')
+      assert Heap.merge(tree, LHeap.empty()) == tree
     end
 
     test "merging an empty tree with a tree" do
-      tree = leaf()
-      assert Heap.merge(Heap.empty(), tree) == tree
+      tree = LHeap.make_leaf('a')
+      assert Heap.merge(LHeap.empty(), tree) == tree
     end
 
     test "merging h1 with h2" do
-      h1 = leaf('h1')
-      h2 = leaf('h2')
-      expected = %Heap.Tree{
+      h1 = LHeap.make_leaf('h1')
+      h2 = LHeap.make_leaf('h2')
+      expected = %LHeap{
         rank: 1,
         elem: 'h1',
         left: h2,
-        right: Heap.empty(),
+        right: LHeap.empty(),
       }
       assert Heap.merge(h1, h2) == expected
     end
 
     test "merging h2 with h1" do
-      h1 = leaf('h1')
-      h2 = leaf('h2')
-      expected = %Heap.Tree{
+      h1 = LHeap.make_leaf('h1')
+      h2 = LHeap.make_leaf('h2')
+      expected = %LHeap{
         rank: 1,
         elem: 'h1',
         left: h2,
-        right: Heap.empty(),
+        right: LHeap.empty(),
       }
       assert Heap.merge(h2, h1) == expected
     end
@@ -53,73 +53,67 @@ defmodule Ch03LeftistHeapTest do
 
   describe "Funpurr.Ch03.LeftistHeap.insert/2" do
     test "insert h1 to empty" do
-      assert Heap.insert_through_merge('h1', Heap.empty()) == leaf('h1')
-      assert Heap.insert('h1', Heap.empty()) == leaf('h1')
+      assert LHeap.insert_through_merge(LHeap.empty(), 'h1') == LHeap.make_leaf('h1')
+      assert_raise UndefinedFunctionError, fn ->
+        Heap.insert(LHeap.empty(), 'h1')
+      end
     end
 
     test "insert h1 to h2" do
-      expected = %Heap.Tree{
+      expected = %LHeap{
         rank: 1,
         elem: 'h1',
-        left: leaf('h2'),
-        right: Heap.empty(),
+        left: LHeap.make_leaf('h2'),
+        right: LHeap.empty(),
       }
-      assert Heap.insert_through_merge('h1', leaf('h2')) == expected
-      assert Heap.insert('h1', leaf('h2')) == expected
+      assert LHeap.insert_through_merge(LHeap.make_leaf('h2'), 'h1') == expected
+      assert Heap.insert(LHeap.make_leaf('h2'), 'h1') == expected
     end
 
     test "insert h1 to h2-h3-h4" do
-      target = %Heap.Tree{
+      target = %LHeap{
         rank: 2,
         elem: 'h2',
-        left: leaf('h3'),
-        right: leaf('h4'),
+        left: LHeap.make_leaf('h3'),
+        right: LHeap.make_leaf('h4'),
       }
-      expected = %Heap.Tree{
+      expected = %LHeap{
         rank: 1,
         elem: 'h1',
         left: target,
-        right: Heap.empty(),
+        right: LHeap.empty(),
       }
-      assert Heap.insert_through_merge('h1', target) == expected
-      assert Heap.insert('h1', target) == expected
+      assert LHeap.insert_through_merge(target, 'h1') == expected
+      assert Heap.insert(target, 'h1') == expected
     end
   end
 
   describe "Funpurr.Ch03.LeftistHeap.from_list/1" do
-    test_with_mock "empty list", Heap, [:passthrough], [] do
-      assert Heap.from_list([]) == Heap.empty()
-      assert num_calls(Heap.merge_list(:_)) == 0
+    test_with_mock "empty list", LHeap, [:passthrough], [] do
+      assert LHeap.from_list([]) == LHeap.empty()
+      assert num_calls(LHeap.merge_list(:_)) == 0
     end
 
-    test_with_mock "single element", Heap, [:passthrough], [] do
-      assert Heap.from_list([1]) == leaf(1)
-      assert num_calls(Heap.merge_list(:_)) == 0
+    test_with_mock "single element", LHeap, [:passthrough], [] do
+      assert LHeap.from_list([1]) == LHeap.make_leaf(1)
+      assert num_calls(LHeap.merge_list(:_)) == 0
     end
 
-    test_with_mock "four elements", Funpurr.Ch03.LeftistHeap, [:passthrough], [] do
-      expected = %Heap.Tree{
+    test_with_mock "four elements", LHeap, [:passthrough], [] do
+      expected = %LHeap{
         rank: 2,
         elem: 1,
-        left: leaf(2),
-        right: %Heap.Tree{
+        left: LHeap.make_leaf(2),
+        right: %LHeap{
           rank: 1,
           elem: 3,
-          left: leaf(4),
-          right: Heap.empty(),
+          left: LHeap.make_leaf(4),
+          right: LHeap.empty(),
         },
       }
-      assert Heap.from_list([1, 2, 3, 4]) == expected
-      assert num_calls(Heap.from_list(:_)) == 1
-      assert num_calls(Heap.merge_list(:_)) == 2
+      assert LHeap.from_list([1, 2, 3, 4]) == expected
+      assert num_calls(LHeap.from_list(:_)) == 1
+      assert num_calls(LHeap.merge_list(:_)) == 2
     end
-  end
-
-  defp leaf(elem \\ 'hello', rank \\ 1) do
-    %Heap.Tree{
-      rank: rank,
-      elem: elem,
-      left: Heap.empty(),
-      right: Heap.empty()}
   end
 end

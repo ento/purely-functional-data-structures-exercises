@@ -1,6 +1,7 @@
 defmodule Funpurr.Ch03.BinomialHeap do
   # datatype Heap = Tree list
-  @type heap(a) :: list({non_neg_integer, Node.t(a)})
+  @type t(a) :: list({non_neg_integer, Node.t(a)})
+  defstruct [:trees]
 
   # datatype Tree = Node of int x Elem.T x Tree list
   defmodule Node do
@@ -8,8 +9,25 @@ defmodule Funpurr.Ch03.BinomialHeap do
     defstruct [:elem, :children]
   end
 
-  @spec empty() :: heap(any)
-  def empty(), do: []
+  @spec empty() :: t(any)
+  def empty(), do: %__MODULE__{trees: []}
+
+  @spec from_elem(a) :: t(any) when a: any
+  def from_elem(elem) do
+    %__MODULE__{trees: [make_root(elem)]}
+  end
+
+  @spec make_root(a) :: {non_neg_integer, Note.t(a)} when a: any
+  def make_root(elem) do
+    {0, make_leaf(elem)}
+  end
+
+  @spec make_leaf(a) :: Note.t(a) when a: any
+  def make_leaf(elem) do
+    %Node{
+      elem: elem,
+      children: []}
+  end
 
   @spec rank({non_neg_integer, Node.t}) :: non_neg_integer
   def rank({rank, _}), do: rank
@@ -19,8 +37,8 @@ defmodule Funpurr.Ch03.BinomialHeap do
 
   @spec link({non_neg_integer, Node.t}, {non_neg_integer, Node.t}) :: {non_neg_integer, Node.t}
   def link(
-    {rank1, %Node{elem: elem1, children: children1}} = t1,
-    {_, %Node{elem: elem2, children: children2}} = t2) do
+    {rank1, %Node{elem: elem1, children: children1} = t1},
+    {_, %Node{elem: elem2, children: children2} = t2}) do
     if elem1 <= elem2 do
       {rank1 + 1, %Node{elem: elem1, children: [t2 | children1]}}
     else
@@ -28,66 +46,93 @@ defmodule Funpurr.Ch03.BinomialHeap do
     end
   end
 
-  @spec insert(a, heap(a)) :: heap(a) when a: any
-  def insert(elem, heap) do
-    ins_tree({0, %Node{elem: elem, children: []}}, heap)
-  end
-
-  defp ins_tree(t, []), do: [t]
-  defp ins_tree(t1, t2 = [t2_head | t2_tail]) do
-    if rank(t1) < rank(t2_head) do
-      [t1 | t2]
-    else
-      ins_tree(link(t1, t2_head), t2_tail)
-    end
-  end
-
-  @spec merge(heap(a), heap(a)) :: heap(a) when a: any
-  def merge(h, []), do: h
-  def merge([], h), do: h
-  def merge([head1 | tail1] = heap1, [head2 | tail2] = heap2) do
-    if rank(head1) < rank(head2) do
-      [head1 | merge(tail1, heap2)]
-    else
-      if rank(head2) < rank(head1) do
-        [head2 | merge(heap1, tail2)]
-      else
-        ins_tree(link(head1, head2), merge(tail1, tail2))
-      end
-    end
-  end
-
-  # exercise 3.5
-  @spec find_min(heap(a)) :: a when a: any
-  def find_min([h]), do: root(h)
-  def find_min([h | t]) do
-    [t_head | t_tail] = t
-    if root(h) < root(t_head) do
-      find_min([h | t_tail])
-    else
-      find_min(t)
-    end
-  end
-
-  @spec find_min_via_remove_min_tree(heap(a)) :: a when a: any
+  @spec find_min_via_remove_min_tree(BHeap.t(a)) :: a when a: any
   def find_min_via_remove_min_tree(ts) do
     {t, _} = remove_min_tree(ts)
     root(t)
   end
 
-  defp remove_min_tree([h]), do: {h, []}
-  defp remove_min_tree([h | t]) do
-    {t_min, t_rest} = remove_min_tree(t)
+  def remove_min_tree(%__MODULE__{trees: [h]}), do: {h, []}
+  def remove_min_tree(%__MODULE__{trees: [h | t]}) do
+    {t_min, t_rest} = remove_min_tree(%__MODULE__{trees: t})
     if root(h) <= root(t_min) do
       {h, t}
     else
       {t_min, [h | t_rest]}
     end
   end
+end
 
-  @spec delete_min(heap(a)) :: heap(a) when a: any
+defimpl Heap, for: Funpurr.Ch03.BinomialHeap do
+  alias Funpurr.Ch03.BinomialHeap, as: BHeap
+  @spec insert(BHeap.t(a), a) :: BHeap.t(a) when a: any
+  def insert(heap, elem) do
+    ins_tree(heap, {0, %BHeap.Node{elem: elem, children: []}})
+  end
+
+  defp ins_tree(%BHeap{trees: []}, t), do: %BHeap{trees: [t]}
+  defp ins_tree(%BHeap{trees: [t2_head | t2_tail] = t2}, t1) do
+    if BHeap.rank(t1) < BHeap.rank(t2_head) do
+      %BHeap{trees: [t1 | t2]}
+    else
+      ins_tree(%BHeap{trees: t2_tail}, BHeap.link(t1, t2_head))
+    end
+  end
+
+  @spec merge(BHeap.t(a), BHeap.t(a)) :: BHeap.t(a) when a: any
+  def merge(h, %BHeap{trees: []}), do: h
+  def merge(%BHeap{trees: []}, h), do: h
+  def merge(
+    %BHeap{trees: [head1 | tail1]} = heap1,
+    %BHeap{trees: [head2 | tail2]} = heap2) do
+    if BHeap.rank(head1) < BHeap.rank(head2) do
+      %BHeap{trees: merged} = merge(%BHeap{trees: tail1}, heap2)
+      %BHeap{trees: [head1 | merged]}
+    else
+      if BHeap.rank(head2) < BHeap.rank(head1) do
+        %BHeap{trees: merged} = merge(heap1, %BHeap{trees: tail2})
+        %BHeap{trees: [head2 | merged]}
+      else
+        ins_tree(
+          merge(%BHeap{trees: tail1}, %BHeap{trees: tail2}),
+          BHeap.link(head1, head2))
+      end
+    end
+  end
+
+  # exercise 3.5
+  @spec find_min(BHeap.t(a)) :: a when a: any
+  def find_min(%BHeap{trees: [h]}), do: BHeap.root(h)
+  def find_min(%BHeap{trees: [h | t]}) do
+    [t_head | t_tail] = t
+    if BHeap.root(h) < BHeap.root(t_head) do
+      find_min(%BHeap{trees: [h | t_tail]})
+    else
+      find_min(%BHeap{trees: t})
+    end
+  end
+
+  @spec delete_min(BHeap.t(a)) :: BHeap.t(a) when a: any
   def delete_min(heap) do
-    {{_, %Node{children: min_children}}, rest} = remove_min_tree(heap)
-    merge(Enum.reverse(min_children), rest)
+    {{_, %BHeap.Node{children: min_children}}, rest} = BHeap.remove_min_tree(heap)
+    ranked_children = Enum.reverse(min_children)
+    |> Enum.with_index
+    |> Enum.map(fn({child, index}) -> {index, child} end)
+    merge(%BHeap{trees: ranked_children}, %BHeap{trees: rest})
+  end
+end
+
+defimpl Enumerable, for: Funpurr.Ch03.BinomialHeap do
+  alias Funpurr.Ch03.BinomialHeap, as: BHeap
+  def reduce(%BHeap{trees: t}, acc, reducer) do
+    Enumerable.reduce(t, acc, reducer)
+  end
+
+  def count(%BHeap{trees: t}) do
+    Enumerable.count(t)
+  end
+
+  def member?(%BHeap{trees: t}, term) do
+    Enumerable.member?(t, term)
   end
 end
