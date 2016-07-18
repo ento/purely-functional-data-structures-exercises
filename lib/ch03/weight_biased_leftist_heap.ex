@@ -1,20 +1,18 @@
 defmodule Funpurr.Ch03.WeightBiasedLeftistHeap do
+  alias Heap.Empty, as: E
+
   @type t(a) :: %__MODULE__{weight: integer(), elem: a, left: __MODULE__.t(a), right: __MODULE__.t(a)}
   defstruct [:weight, :elem, :left, :right]
 
-  def empty() do
-    :empty
-  end
-
-  def weight(:empty), do: 0
+  def weight(%E{}), do: 0
   def weight(%__MODULE__{weight: weight}), do: weight
 
   def insert_through_merge(h, elem) do
-    Heap.merge(%__MODULE__{weight: 1, elem: elem, left: empty(), right: empty()}, h)
+    Heap.merge(%__MODULE__{weight: 1, elem: elem, left: %E{}, right: %E{}}, h)
   end
 
   # exercise 3.3
-  def from_list([]), do: empty()
+  def from_list([]), do: %E{}
   def from_list([h]), do: make_leaf(h)
   def from_list(l) do
     __MODULE__.merge_list Enum.map(l, &(make_leaf/1))
@@ -24,12 +22,12 @@ defmodule Funpurr.Ch03.WeightBiasedLeftistHeap do
   # which in turn is needed to count calls through meck/mock.
   def merge_list(l) do
     merged = [h | t] =
-      Enum.chunk(l, 2, 2, [empty()])
+      Enum.chunk(l, 2, 2, [%E{}])
       |> Enum.map(fn pair -> apply Heap, :merge, pair end)
     case t do
       [] ->
         h
-      [:empty] ->
+      [%E{}] ->
         h
       _ ->
         __MODULE__.merge_list merged
@@ -37,14 +35,15 @@ defmodule Funpurr.Ch03.WeightBiasedLeftistHeap do
   end
 
   def make_leaf(elem) do
-    %__MODULE__{weight: 1, elem: elem, left: empty(), right: empty()}
+    %__MODULE__{weight: 1, elem: elem, left: %E{}, right: %E{}}
   end
 end
 
 defimpl Heap, for: Funpurr.Ch03.WeightBiasedLeftistHeap do
   alias Funpurr.Ch03.WeightBiasedLeftistHeap, as: WBLHeap
-  def merge(h, :empty), do: h
-  def merge(:empty, h), do: h
+  alias Heap.Empty, as: E
+
+  def merge(h, %E{}), do: h
   def merge(
     h1 = %WBLHeap{elem: elem1, left: left1, right: right1},
     h2 = %WBLHeap{elem: elem2, left: left2, right: right2}) do
@@ -58,7 +57,7 @@ defimpl Heap, for: Funpurr.Ch03.WeightBiasedLeftistHeap do
   # exercise 3.2
   def insert(h = %WBLHeap{elem: elem, left: left, right: right}, x) do
     if x <= elem do
-      %WBLHeap{weight: WBLHeap.weight(h) + 1, elem: x, left: h, right: WBLHeap.empty()}
+      %WBLHeap{weight: WBLHeap.weight(h) + 1, elem: x, left: h, right: %E{}}
     else
       make_tree(elem, left, Heap.insert(right, x))
     end

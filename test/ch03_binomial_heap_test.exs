@@ -104,14 +104,12 @@ defmodule Ch03BinomialHeapTest do
 
   describe "Funpurr.Ch03.BinomialHeap.find_min/1" do
     test "min of empty" do
-      assert_raise FunctionClauseError, fn ->
-        Heap.find_min(BHeap.empty())
-      end
+      assert Heap.find_min(BHeap.empty()) == :error
     end
 
     test "min of leaf a" do
-      assert BHeap.find_min_via_remove_min_tree(BHeap.from_elem('a')) == 'a'
-      assert Heap.find_min(BHeap.from_elem('a')) == 'a'
+      assert BHeap.find_min_via_remove_min_tree(BHeap.from_elem('a')) == {:ok, 'a'}
+      assert Heap.find_min(BHeap.from_elem('a')) == {:ok, 'a'}
     end
 
     test "min of [c, a_b]" do
@@ -120,8 +118,8 @@ defmodule Ch03BinomialHeapTest do
         children: [BHeap.make_leaf('b')],
       }}
       c_a_b = Heap.insert(%BHeap{trees: [a_b]}, 'c')
-      assert BHeap.find_min_via_remove_min_tree(c_a_b) == 'a'
-      assert Heap.find_min(c_a_b) == 'a'
+      assert BHeap.find_min_via_remove_min_tree(c_a_b) == {:ok, 'a'}
+      assert Heap.find_min(c_a_b) == {:ok, 'a'}
     end
   end
 

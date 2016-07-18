@@ -4,10 +4,11 @@ defmodule Ch03WeightBiasedLeftistHeapTest do
   import MockHistory
   doctest Funpurr.Ch03.WeightBiasedLeftistHeap
   alias Funpurr.Ch03.WeightBiasedLeftistHeap, as: WBLHeap
+  alias Heap.Empty, as: E
 
   describe "Funpurr.Ch03.WeightBiasedLeftistHeap.weight/1" do
     test "weight of an empty tree" do
-      assert WBLHeap.weight(WBLHeap.empty()) == 0
+      assert WBLHeap.weight(%E{}) == 0
     end
 
     test "weight of a non-empty tree" do
@@ -18,14 +19,14 @@ defmodule Ch03WeightBiasedLeftistHeapTest do
   describe "Funpurr.Ch03.WeightBiasedLeftistHeap.merge/2" do
     test "merging a tree with an empty tree" do
       tree = WBLHeap.make_leaf('a')
-      merged = Heap.merge(tree, WBLHeap.empty())
+      merged = Heap.merge(tree, %E{})
       assert merged == tree
       assert WBLHeap.weight(merged) == 1
     end
 
     test "merging an empty tree with a tree" do
       tree = WBLHeap.make_leaf('a')
-      merged = Heap.merge(WBLHeap.empty(), tree)
+      merged = Heap.merge(%E{}, tree)
       assert merged == tree
       assert WBLHeap.weight(merged) == 1
     end
@@ -37,7 +38,7 @@ defmodule Ch03WeightBiasedLeftistHeapTest do
         weight: 2,
         elem: 'h1',
         left: h2,
-        right: WBLHeap.empty(),
+        right: %E{},
       }
       assert Heap.merge(h1, h2) == expected
     end
@@ -49,7 +50,7 @@ defmodule Ch03WeightBiasedLeftistHeapTest do
         weight: 2,
         elem: 'h1',
         left: h2,
-        right: WBLHeap.empty(),
+        right: %E{},
       }
       assert Heap.merge(h2, h1) == expected
     end
@@ -57,9 +58,9 @@ defmodule Ch03WeightBiasedLeftistHeapTest do
 
   describe "Funpurr.Ch03.WeightBiasedLeftistHeap.insert/2" do
     test "insert h1 to empty" do
-      assert WBLHeap.insert_through_merge(WBLHeap.empty(), 'h1') == WBLHeap.make_leaf('h1')
-      assert_raise UndefinedFunctionError, fn ->
-        Heap.insert(WBLHeap.empty(), 'h1')
+      assert WBLHeap.insert_through_merge(%E{}, 'h1') == WBLHeap.make_leaf('h1')
+      assert_raise ArgumentError, fn ->
+        Heap.insert(%E{}, 'h1')
       end
     end
 
@@ -68,7 +69,7 @@ defmodule Ch03WeightBiasedLeftistHeapTest do
         weight: 2,
         elem: 'h1',
         left: WBLHeap.make_leaf('h2'),
-        right: WBLHeap.empty(),
+        right: %E{},
       }
       assert WBLHeap.insert_through_merge(WBLHeap.make_leaf('h2'), 'h1') == expected
       assert Heap.insert(WBLHeap.make_leaf('h2'), 'h1') == expected
@@ -85,7 +86,7 @@ defmodule Ch03WeightBiasedLeftistHeapTest do
         weight: 3,
         elem: 'h1',
         left: target,
-        right: WBLHeap.empty(),
+        right: %E{},
       }
       assert WBLHeap.insert_through_merge(target, 'h1') == expected
       assert Heap.insert(target, 'h1') == expected
@@ -94,7 +95,7 @@ defmodule Ch03WeightBiasedLeftistHeapTest do
 
   describe "Funpurr.Ch03.WeightBiasedLeftistHeap.from_list/1" do
     test_with_mock "empty list", WBLHeap, [:passthrough], [] do
-      assert WBLHeap.from_list([]) == WBLHeap.empty()
+      assert WBLHeap.from_list([]) == %E{}
       assert num_calls(WBLHeap.merge_list(:_)) == 0
     end
 
@@ -111,7 +112,7 @@ defmodule Ch03WeightBiasedLeftistHeapTest do
           weight: 2,
           elem: 3,
           left: WBLHeap.make_leaf(4),
-          right: WBLHeap.empty(),
+          right: %E{},
         },
         right: WBLHeap.make_leaf(2),
       }

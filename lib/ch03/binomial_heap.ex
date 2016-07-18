@@ -22,7 +22,7 @@ defmodule Funpurr.Ch03.BinomialHeap do
     {0, make_leaf(elem)}
   end
 
-  @spec make_leaf(a) :: Note.t(a) when a: any
+  @spec make_leaf(a) :: Node.t(a) when a: any
   def make_leaf(elem) do
     %Node{
       elem: elem,
@@ -46,10 +46,10 @@ defmodule Funpurr.Ch03.BinomialHeap do
     end
   end
 
-  @spec find_min_via_remove_min_tree(BHeap.t(a)) :: a when a: any
+  @spec find_min_via_remove_min_tree(t(a)) :: a when a: any
   def find_min_via_remove_min_tree(ts) do
     {t, _} = remove_min_tree(ts)
-    root(t)
+    {:ok, root(t)}
   end
 
   def remove_min_tree(%__MODULE__{trees: [h]}), do: {h, []}
@@ -65,6 +65,11 @@ end
 
 defimpl Heap, for: Funpurr.Ch03.BinomialHeap do
   alias Funpurr.Ch03.BinomialHeap, as: BHeap
+
+  @spec empty?(BHeap.t) :: boolean
+  def empty?(%BHeap{trees: []}), do: true
+  def empty?(%BHeap{}), do: false
+
   @spec insert(BHeap.t(a), a) :: BHeap.t(a) when a: any
   def insert(heap, elem) do
     ins_tree(heap, {0, %BHeap.Node{elem: elem, children: []}})
@@ -101,8 +106,9 @@ defimpl Heap, for: Funpurr.Ch03.BinomialHeap do
   end
 
   # exercise 3.5
-  @spec find_min(BHeap.t(a)) :: a when a: any
-  def find_min(%BHeap{trees: [h]}), do: BHeap.root(h)
+  @spec find_min(BHeap.t(a)) :: {:ok, a} | :error when a: any
+  def find_min(%BHeap{trees: []}), do: :error
+  def find_min(%BHeap{trees: [h]}), do: {:ok, BHeap.root(h)}
   def find_min(%BHeap{trees: [h | t]}) do
     [t_head | t_tail] = t
     if BHeap.root(h) < BHeap.root(t_head) do

@@ -1,7 +1,9 @@
-defprotocol Heap do # (H: Heap) : Heap =
+defprotocol Heap do
+  defmodule Empty do
+    defstruct []
+  end
   @fallback_to_any true
-  # structure Elem = H.Elem
-  # datatype Heap = E | NE of Elem.T x H.Heap
+  def empty?(heap)
   def find_min(heap)
   def insert(heap, x)
   def merge(heap1, heap2)
@@ -9,5 +11,9 @@ defprotocol Heap do # (H: Heap) : Heap =
 end
 
 defimpl Heap, for: Any do
-  def merge(:empty, h), do: h
+  def empty?(%Heap.Empty{}), do: true
+  def empty?(_), do: false
+  def find_min(%Heap.Empty{}), do: :error
+  def merge(%Heap.Empty{}, h), do: h
+  def insert(%Heap.Empty{}, a), do: raise ArgumentError
 end

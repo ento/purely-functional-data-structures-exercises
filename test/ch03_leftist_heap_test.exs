@@ -4,10 +4,11 @@ defmodule Ch03LeftistHeapTest do
   import MockHistory
   doctest Funpurr.Ch03.LeftistHeap
   alias Funpurr.Ch03.LeftistHeap, as: LHeap
+  alias Heap.Empty, as: E
 
   describe "Funpurr.Ch03.LeftistHeap.rank/1" do
     test "rank of an empty tree" do
-      assert LHeap.rank(LHeap.empty()) == 0
+      assert LHeap.rank(%E{}) == 0
     end
 
     test "rank of a non-empty tree" do
@@ -18,12 +19,12 @@ defmodule Ch03LeftistHeapTest do
   describe "Funpurr.Ch03.LeftistHeap.merge/2" do
     test "merging a tree with an empty tree" do
       tree = LHeap.make_leaf('a')
-      assert Heap.merge(tree, LHeap.empty()) == tree
+      assert Heap.merge(tree, %E{}) == tree
     end
 
     test "merging an empty tree with a tree" do
       tree = LHeap.make_leaf('a')
-      assert Heap.merge(LHeap.empty(), tree) == tree
+      assert Heap.merge(%E{}, tree) == tree
     end
 
     test "merging h1 with h2" do
@@ -33,7 +34,7 @@ defmodule Ch03LeftistHeapTest do
         rank: 1,
         elem: 'h1',
         left: h2,
-        right: LHeap.empty(),
+        right: %E{},
       }
       assert Heap.merge(h1, h2) == expected
     end
@@ -45,7 +46,7 @@ defmodule Ch03LeftistHeapTest do
         rank: 1,
         elem: 'h1',
         left: h2,
-        right: LHeap.empty(),
+        right: %E{},
       }
       assert Heap.merge(h2, h1) == expected
     end
@@ -53,9 +54,9 @@ defmodule Ch03LeftistHeapTest do
 
   describe "Funpurr.Ch03.LeftistHeap.insert/2" do
     test "insert h1 to empty" do
-      assert LHeap.insert_through_merge(LHeap.empty(), 'h1') == LHeap.make_leaf('h1')
-      assert_raise UndefinedFunctionError, fn ->
-        Heap.insert(LHeap.empty(), 'h1')
+      assert LHeap.insert_through_merge(%E{}, 'h1') == LHeap.make_leaf('h1')
+      assert_raise ArgumentError, fn ->
+        Heap.insert(%E{}, 'h1')
       end
     end
 
@@ -64,7 +65,7 @@ defmodule Ch03LeftistHeapTest do
         rank: 1,
         elem: 'h1',
         left: LHeap.make_leaf('h2'),
-        right: LHeap.empty(),
+        right: %E{},
       }
       assert LHeap.insert_through_merge(LHeap.make_leaf('h2'), 'h1') == expected
       assert Heap.insert(LHeap.make_leaf('h2'), 'h1') == expected
@@ -81,7 +82,7 @@ defmodule Ch03LeftistHeapTest do
         rank: 1,
         elem: 'h1',
         left: target,
-        right: LHeap.empty(),
+        right: %E{},
       }
       assert LHeap.insert_through_merge(target, 'h1') == expected
       assert Heap.insert(target, 'h1') == expected
@@ -90,7 +91,7 @@ defmodule Ch03LeftistHeapTest do
 
   describe "Funpurr.Ch03.LeftistHeap.from_list/1" do
     test_with_mock "empty list", LHeap, [:passthrough], [] do
-      assert LHeap.from_list([]) == LHeap.empty()
+      assert LHeap.from_list([]) == %E{}
       assert num_calls(LHeap.merge_list(:_)) == 0
     end
 
@@ -108,7 +109,7 @@ defmodule Ch03LeftistHeapTest do
           rank: 1,
           elem: 3,
           left: LHeap.make_leaf(4),
-          right: LHeap.empty(),
+          right: %E{},
         },
       }
       assert LHeap.from_list([1, 2, 3, 4]) == expected
